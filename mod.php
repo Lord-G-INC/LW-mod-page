@@ -1,8 +1,41 @@
 <?php
-	$modName = "Super Mario Galaxy 63";
-	$modShortName = "SMG63";
+	/*$modName = "Super Mario Galaxy 63";
+	$modShortName = $_GET["mod"];
 	$author = "Sussy Alex";
 	$description = "A very <i>sussy</i> mod by the <b>sussy</b> modder <s>Super Hackio</s><u>Alex SMG</u>!";
+	$imgUrl = "https://media.discordapp.net/attachments/1023118146590220298/1274467706841731163/970f27adec486b3384f000d8f04f3ba6ae8dc275v2_hq.jpg?ex=66c304cb&is=66c1b34b&hm=4bfef706417832c68386e0fef001ff68aa8f55a9bbae895ab939a61e392ab732&=&format=webp&width=501&height=669";*/
+	$guideInfo = array("categories" => array());
+	$modLinksHTML = "";
+	$connection = new mysqli("localhost", "root", "", "lw-mods");
+
+	$stmt = $connection->prepare("SELECT * FROM modCategories");
+	$stmt->execute();
+	$stmtResult = $stmt->get_result();
+	$rows = array();
+	while ($r = mysqli_fetch_assoc($stmtResult)) 
+		$guideInfo["categories"][] = array("key" => $r["ModCategoryId"], "title" => $r["ModCategoryName"], "entries" => array());
+
+	$stmt = $connection->prepare("SELECT * FROM mods");
+	$stmt->execute();
+	$stmtResult = $stmt->get_result();
+	$rows = array();
+	while ($r = mysqli_fetch_assoc($stmtResult)) {
+		if ($r["ModId"] == $_GET["mod"]) {
+			$modName = $r["ModName"];
+			$modShortName = $r["ModId"];
+			$author = $r["Author"];
+			$description = $r["Description"];
+			$imgUrl = json_decode($r["ModImages"], true)[0];
+			foreach (json_decode($r["ModLinks"], true) as $modLink) 
+				$modLinksHTML .= "<a href=\"" . $modLink["Url"] . "\"><i class=\"fas fa-download\"></i> " . $modLink["Name"] . "</a><br>";
+		}
+
+		foreach ($guideInfo["categories"] as &$category) 
+			if ($category["key"] == $r["ModCategory"]) 
+				$category["entries"][] = array("title" => $r["ModName"], "url" => "?mod=" . $r["ModId"]);
+	}
+	$guideInfoJson = json_encode($guideInfo);
+	
 ?>
 <!DOCTYPE html>
 <html>
@@ -24,6 +57,9 @@
 			#md-container { display: none; }
 			md-block:not([rendered]) { display: none; }
 		</style>
+		<script>
+			const GUIDE_INFOS = <?= $guideInfoJson ?>
+		</script>
     </head>
     <body>
         <header>
@@ -44,41 +80,17 @@
 			<div class="guides-toc">
 				<table class="pagelist" id="table-of-contents">
 					<thead>
-						<tr><td>Table of contents</td></tr>
+						<tr><td>Mods &amp; Creations</td></tr>
 					</thead>
 				</table>
 			</div>
 			<div class="contentbox guide-contents" id="md-container">
 				<h1><?= $modName ?></h1>
-				<h3>By: <?= $author ?></h3>
+				<h4>By: <?= $author ?></h4>
 				<p><?= $description ?></p>
-
-				<!-- If you're new to modding the <em>Galaxy</em> series of games, check out the Getting Started page. Whitehole Basics may also be a worthwhile read.-->
-
-				<h2>What's possible when modding Super Mario Galaxy (2)?</h2>
-				<p>
-					Thanks to advances in modding tools both from within the scene and outside, almost anything is possible with regards to modifying the game, including:
-				</p>
-				<ul>
-					<li>Modifying and creating levels with Whitehole - a collaborative effort between community members.</li>
-					<li>Modifying and creating new text with <em>Aurum</em>'s galaxymsbt.</li>
-					<li>Creating and replacing models with <em>Gamma</em> and <em>Yoshi2</em>'s SuperBMD.</li>
-					<li>Creating animations with <em>tarsa129</em>'s j3d-animation-editor.</li>
-					<li>Replacing sound effects with <em>Xayrga</em>'s SoundModdingToolkit.</li>
-					<li>Injecting new code with <em>shibboleet</em> and <em>Aurum</em>'s Syati.</li>
-				</ul>
-				<p>
-					Many games on both the Wii and GameCube utilize the same libraries for models, layouts, collision and audio - hence developments in other communities further our capabilities as well.
-				</p>
-
-				<h2>Discord Server</h2>
-				<p>
-					<em>Super Mario Galaxy</em> modding is difficult and cumbersome at times. Thankfully we have the <a href="https://discord.gg/ZxEqyYeZbf">Luma's Workshop Discord server</a>, dedicated to helping modders and sharing content.
-					The Discord server is a great place to share ideas and have conversations about modding, as well as general talk.
-				</p>
-
-				<!--<h2>Wiki</h2>
-				The Luma's Workshop Wiki contains a large amount of information about both of the *Super Mario Galaxy* games. A link to wiki can be found [here](https://www.lumasworkshop.com/wiki/Main_Page) and on the home page.-->
+				<img src="<?= $imgUrl ?>">
+				<h2>Links</h2>
+				<div><?= $modLinksHTML ?></div>
 			</div>
 		</div>
         <!-- End writing here -->
