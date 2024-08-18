@@ -88,6 +88,7 @@
 				<h1><?= $modName ?></h1>
 				<h4>By: <?= $author ?></h4>
 				<p><?= $description ?></p>
+				<h2>Images</h2>
 				<img src="<?= $imgUrl ?>">
 				<h2>Links</h2>
 				<div><?= $modLinksHTML ?></div>
